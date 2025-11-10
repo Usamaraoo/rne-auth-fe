@@ -1,14 +1,38 @@
-import { NextFunction, Request, Response } from "express";
-import { findUserByEmail } from "./auth.service";
+import { Request, Response } from "express";
+import * as authService from "./auth.service"
+import { CreateUserInput } from "../user/user.model";
 import { errorResponse, successResponse } from "../../utils/response";
+import { LoginUserInput } from "./auth.modal";
 
-export const loginHandler = async (req: Request, res: Response) => {
+
+
+export const signupHandler = async (
+    req: Request<{}, {}, CreateUserInput>,
+    res: Response
+) => {
     try {
-        const { email } = req.body;
-        const user = await findUserByEmail(email);
-        if (!user) return errorResponse(res, "User not found", 404);
-        return successResponse(res, user, "Login success");
+        const user = await authService.signup(req.body);
+        return successResponse(res, user, "Signup successful");
     } catch (err: any) {
         return errorResponse(res, err.message);
+    }
+};
+
+export const loginHandler = async (
+    req: Request<{}, {}, LoginUserInput>,
+    res: Response
+) => {
+    try {
+        const data = await authService.login(req.body);
+        // Set cookie (secure & httpOnly)
+        res.cookie("token", data.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+        return successResponse(res, data, "Login successful");
+    } catch (err: any) {
+        return errorResponse(res, err.message, 400);
     }
 };

@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../../../config/prisma";
 import { GoogleUser } from "../../user/user.model";
-import { getGoogleAuthURL, getGoogleUser } from "./auth..google.service";
+import { authenticateGoogleUser, getGoogleAuthURL, getGoogleUser } from "./auth..google.service";
+import { successResponse } from "../../../utils/response";
 
 
 
@@ -16,19 +17,8 @@ export const googleCallback = async (req: Request, res: Response, next: NextFunc
   try {
     const code = req.query.code as string;
     const googleUser = await getGoogleUser(code) as GoogleUser;
-    console.log("googleUser", googleUser)
-    // Upsert user in DB
-    const user = await prisma.user.upsert({
-      where: { email: googleUser.email },
-      update: { name: googleUser.name },
-      create: {
-        name: googleUser.name,
-        email: googleUser.email,
-        password: 'fwfe'
-      },
-    });
-
-    res.json({ success: true, user });
+    const user = await authenticateGoogleUser(googleUser.email, googleUser.name);
+    return successResponse(res, user, "Signup successful");
   } catch (error) {
     next(error);
   }

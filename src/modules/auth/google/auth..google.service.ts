@@ -3,6 +3,8 @@ import prisma from "../../../config/prisma";
 
 import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
+import { AuthProvider, User } from "@prisma/client";
+import { generateToken } from "../../../utils/jwt";
 
 dotenv.config();
 
@@ -39,5 +41,23 @@ export const getGoogleUser = async (code: string) => {
 
   return response.data;
 };
+
+export const authenticateGoogleUser = async (email: string, name: string): Promise<{ token: string; user: User }> => {
+  // Upsert user in DB
+  console.log('came hree');
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: { name },
+    create: {
+      name,
+      email,
+      provider: AuthProvider.Google
+    },
+  });
+  const token = generateToken(user.id);
+
+  return { token, user };
+};
+
 
 
