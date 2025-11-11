@@ -43,8 +43,6 @@ export const getGoogleUser = async (code: string) => {
 };
 
 export const authenticateGoogleUser = async (email: string, name: string): Promise<{ token: string; user: User }> => {
-  // Upsert user in DB
-  console.log('came hree');
   const user = await prisma.user.upsert({
     where: { email },
     update: { name },
