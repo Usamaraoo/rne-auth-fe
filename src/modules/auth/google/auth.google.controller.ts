@@ -16,7 +16,9 @@ export const googleAuth = (req: Request, res: Response) => {
 export const googleCallback = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const code = req.query.code as string;
+    // get user from google
     const googleUser = await getGoogleUser(code) as GoogleUser;
+    // add user to db and generate token
     const user = await authenticateGoogleUser(googleUser.email, googleUser.name);
     return successResponse(res, user, "Signup successful");
   } catch (error) {

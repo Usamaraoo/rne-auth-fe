@@ -42,6 +42,7 @@ export const getGoogleUser = async (code: string) => {
   return response.data;
 };
 
+// Add user to db and generate token
 export const authenticateGoogleUser = async (email: string, name: string): Promise<{ token: string; user: User }> => {
   const user = await prisma.user.upsert({
     where: { email },

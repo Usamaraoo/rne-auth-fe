@@ -11,6 +11,7 @@ enum AuthProvider {
   Google
   Email
   LinkedIn
+  Github
 }
 
 model User {
